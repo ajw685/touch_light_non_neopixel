@@ -4,7 +4,7 @@ Simple wifi touch lights that synchronize their colors from across the globe.
 
 ## What
 
-This is a [Particle](https://www.particle.io/) project for linking [wifi touch lights](http://patrick.ble.si/wifi-touch-light) together so their colors are synchronized from anywhere in the globe. This project was developed with the intent of connecting loved ones. You can touch the lights, setting them to a specific color and communicating with all others, that you are thinking of them. Pictures and details can be found on my [blog post](http://patrick.ble.si/wifi-touch-light).
+This is a [Particle](https://www.particle.io/) project for linking [wifi touch lights](http://patrick.ble.si/wifi-touch-light) together so their colors are synchronized from anywhere in the globe. This project was developed with the intent of connecting loved ones. You can touch the lights, setting them to a specific color and communicating with all others, that you are thinking of them. Pictures and details can be found on Patrick Blesi's [blog post](http://patrick.ble.si/wifi-touch-light).
 
 ## Usage
 
