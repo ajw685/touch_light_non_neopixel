@@ -1,5 +1,5 @@
 /*
- * Project: touch_light
+ * Project: touch_light_non_neopixel
  * Description: A touch light that syncs with other touch lights. Adapted from
  *              http://www.instructables.com/id/Networked-RGB-Wi-Fi-Decorative-Touch-Lights/
  * Original Author: Patrick Blesi
