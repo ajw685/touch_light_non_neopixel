@@ -2,9 +2,10 @@
  * Project: touch_light
  * Description: A touch light that syncs with other touch lights. Adapted from
  *              http://www.instructables.com/id/Networked-RGB-Wi-Fi-Decorative-Touch-Lights/
- * Author: Patrick Blesi
- * Date: 2017-12-09
- *
+ * Original Author: Patrick Blesi
+ * Original Date: 2017-12-09
+ * Fork Author: Aaron Ward
+ * Fork Date: 2020-04-03
  */
 
 #include "neopixel.h"
@@ -17,24 +18,31 @@
 #define D_SERIAL false
 #define D_WIFI false
 
+#define WIFI_CREDENTIALS_SPECIFIED
+
 String touchEventName = "touch_event";
 
-#define NUM_PARTICLES 4 // number of touch lights in your group
+#define NUM_PARTICLES 2 // number of touch lights in your group
 // Number each Filimin starting at 1.
 String particleId[] = {
   "",                         // 0
-  "330022001547353236343033", // pblesi
-  "2d0047001247353236343033", // carol
-  "2a0026000b47353235303037", // cindy
-  "2e003e001947353236343033"  // tammy
+  "XXXXXXXXXXXXXXXXXXXXXXXX", // #1
+  "XXXXXXXXXXXXXXXXXXXXXXXX" // #2
 };
+
+int redPin = D1;   // Red LED,   connected to digital pin 1
+int grnPin = D2;  // Green LED, connected to digital pin 2
+int bluPin = D3;  // Blue LED,  connected to digital pin 3
+int whtPin = D0; // White LED, connected to digital pin 0
 
 int particleColors[] = {
   0,   // Green
+  131,  // Purple
+  45, //?
   90,  // Magenta
   170, // Blue
-  79,  // Orange
-  131  // Purple
+  79  // Orange
+  
 };
 
 // TWEAKABLE VALUES FOR CAP SENSING. THE BELOW VALUES WORK WELL AS A STARTING PLACE:
@@ -42,7 +50,7 @@ int particleColors[] = {
 // current readings. (was 4)
 #define BASELINE_VARIANCE 512.0
 // SENSITIVITY: Integer. Higher is more sensitive (was 8)
-#define SENSITIVITY 8
+#define SENSITIVITY 6
 // BASELINE_SENSITIVITY: Integer. A trigger point such that values exceeding this point
 // will not affect the baseline. Higher values make the trigger point sooner. (was 16)
 #define BASELINE_SENSITIVITY 16
@@ -53,7 +61,7 @@ int particleColors[] = {
 #define LOOPS_TO_FINAL_COLOR 150
 
 const int minMaxColorDiffs[2][2] = {
-  {5,20},   // min/Max if color change last color change from same touch light
+  {5,6},   // min/Max if color change last color change from same touch light
   {50,128}  // min/Max if color change last color change from different touch light
 };
 
@@ -97,11 +105,11 @@ String eventTypes[] = {
   "Release"
 };
 
-int sPin = D4;
-int rPin = D3;
+int sPin = D5;
+int rPin = D4;
 
 // NEOPIXEL
-#define PIXEL_PIN D2
+#define PIXEL_PIN D6
 #define PIXEL_COUNT 24
 #define PIXEL_TYPE WS2812B
 
@@ -151,6 +159,12 @@ void setup()
   setupWifi();
 #endif
 
+    //LED Setup
+  pinMode(redPin, OUTPUT);   // sets the pins as output
+  pinMode(grnPin, OUTPUT);   
+  pinMode(bluPin, OUTPUT); 
+  pinMode(whtPin, OUTPUT);
+
   Particle.subscribe(touchEventName, handleTouchEvent, MY_DEVICES);
 
   if (D_SERIAL) Serial.begin(9600);
@@ -161,6 +175,9 @@ void setup()
 
   strip.begin();
   strip.show(); // Initialize all pixels to 'off'
+    analogWrite(redPin, 0);
+    analogWrite(grnPin, 0);
+    analogWrite(bluPin, 0);
 
   pinMode(sPin, OUTPUT);
   attachInterrupt(rPin, touchSense, RISING);
@@ -204,7 +221,7 @@ void loop() {
 }
 
 //============================================================
-//	Setup functions
+//  Setup functions
 //============================================================
 //------------------------------------------------------------
 // Functions used during setup
@@ -240,11 +257,25 @@ void flashWhite(Adafruit_NeoPixel* strip) {
     strip->setPixelColor(j, 255, 255, 255);
   }
   strip->show();
+
+  //---
+  analogWrite(redPin, 255);
+  analogWrite(grnPin, 255);
+  analogWrite(bluPin, 255);
+  //---
+
   delay(250);
   for (byte j = 0; j < numPixels; j++) {
     strip->setPixelColor(j, 0, 0, 0);
   }
   strip->show();
+
+  //---
+  analogWrite(redPin, 0);
+  analogWrite(grnPin, 0);
+  analogWrite(bluPin, 0);
+  //---
+
   delay(250);
 }
 
@@ -255,6 +286,16 @@ void traverseColorWheel(Adafruit_NeoPixel* strip) {
     for (byte j = 0; j < numPixels; j++) {
       strip->setPixelColor(j, color);
       strip->show();
+
+      //---
+      uint8_t r = color >> 16;
+      uint8_t g = color >> 8;
+      uint8_t b = color;
+      analogWrite(redPin, r);
+      analogWrite(grnPin, g);
+      analogWrite(bluPin, b);
+      //---
+  //
     }
     delay(1);
   }
@@ -267,6 +308,15 @@ void fade(Adafruit_NeoPixel* strip) {
     for (byte k = 0; k < numPixels; k++) {
       strip->setPixelColor(k, color);
       strip->show();
+
+      //---
+      uint8_t r = color >> 16;
+      uint8_t g = color >> 8;
+      uint8_t b = color;
+      analogWrite(redPin, r);
+      analogWrite(grnPin, g);
+      analogWrite(bluPin, b);
+      //---
     }
     delay(1);
   }
@@ -326,7 +376,7 @@ long touchSampling() {
 }
 
 //============================================================
-//	Touch UI
+//  Touch UI
 //============================================================
 //------------------------------------------------------------
 // ISR for touch sensing
@@ -541,6 +591,22 @@ void updateState() {
 
   uint32_t colorAndBrightness = wheelColor(currentColor, currentBrightness);
   updateNeoPixels(colorAndBrightness);
+
+  //
+  uint8_t r = colorAndBrightness >> 16;
+  uint8_t g = colorAndBrightness >> 8;
+  uint8_t b = colorAndBrightness;
+  Serial.print('r');
+  Serial.println(r);
+  Serial.print('g');
+  Serial.println(g);
+  Serial.print('b');
+  Serial.println(b);
+  analogWrite(redPin, r);
+  analogWrite(grnPin, g);
+  analogWrite(bluPin, b);
+  //
+
   loopCount++;
   colorLoopCount++;
 }
@@ -570,11 +636,27 @@ void updateNeoPixels(uint32_t color) {
   for(char i = 0; i < strip.numPixels(); i++) {
     strip.setPixelColor(i, color);
   }
+  //
+  //Particle.publish("neopixel",color,PRIVATE);
+  //
   strip.show();
+
+  uint8_t r = color >> 16;
+  uint8_t g = color >> 8;
+  uint8_t b = color;
+  Serial.print('r');
+  Serial.println(r);
+  Serial.print('g');
+  Serial.println(g);
+  Serial.print('b');
+  Serial.println(b);
+  analogWrite(redPin, r);
+  analogWrite(grnPin, g);
+  analogWrite(bluPin, b);
 }
 
 //============================================================
-//	NEOPIXEL
+//  NEOPIXEL
 //============================================================
 //------------------------------------------------------------
 // Wheel
