@@ -1,3 +1,15 @@
+[![Alt text](https://i.imgur.com/Mo1YPaK.jpg)](https://imgur.com/a/II1Z9XG)
+
+Q1 controls red component of RGB LEDs
+Q2 controls white LEDs
+Q3 controls green component of RGB LEDs
+Q4 controls blue component of RGB LEDs
+
+I soldered a wire from a digital out on the particle to the voltage regulator that drives current to the RGB leds. It's not as bright as the neo pixel but it works.
+
+I retained the existing USB connection and soldered the 3.3v connections. You can use this with the battery and retain the battery charging capabilities or not, but it will never turn off.
+
+
 # touch_light
 
 Simple wifi touch lights that synchronize their colors from across the globe.
